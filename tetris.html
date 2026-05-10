@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tetris Pro - Scegli Dimensione</title>
+    <style>
+        body {
+            background: #1a1a20;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #main-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        #game-area {
+            position: relative;
+            border: 4px solid #444;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background: #000;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 120px;
+        }
+
+        .panel-box {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #555;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .panel-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        #next-canvas {
+            background: #000;
+            margin: 0 auto;
+            border: 1px solid #555;
+        }
+
+        #menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #menu-overlay h1 {
+            font-size: 36px;
+            margin: 0 0 10px 0;
+            color: #ff0055;
+            text-shadow: 2px 2px #fff;
+        }
+
+        #menu-overlay p {
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+
+        .size-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 280px;
+        }
+
+        .size-btn {
+            background: linear-gradient(145deg, #333, #222);
+            border: 2px solid #555;
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .size-btn:hover {
+            border-color: #ff0055;
+            background: linear-gradient(145deg, #444, #333);
+        }
+
+        .size-btn:active {
+            transform: scale(0.98);
+        }
+
+        .size-btn.selected {
+            border-color: #00ff77;
+            background: linear-gradient(145deg, #00ff7722, #00ff7744);
+        }
+
+        .size-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .size-info {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        #start-btn {
+            margin-top: 30px;
+            background: linear-gradient(145deg, #ff0055, #cc0044);
+            border: none;
+            border-radius: 10px;
+            padding: 15px 60px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
+        }
+
+        #start-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        #game-overlay h1 {
+            font-size: 36px;
+            margin: 0 0 10px 0;
+            color: #ff0055;
+            text-shadow: 2px 2px #fff;
+        }
+
+        #game-overlay p {
+            font-size: 16px;
+            color: #ddd;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+
+        #controls {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #444, #222);
+            border: 2px solid #666;
+            border-radius: 50%;
+            color: white;
+            font-size: 28px;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            touch-action: manipulation;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            background: #ff0055;
+            border-color: #ff0055;
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        #btn-rotate {
+            border-color: #ff0055;
+            color: #ff0055;
+        }
+
+        #btn-drop {
+            border-color: #00ff77;
+            color: #00ff77;
+        }
+
+        @media (max-width: 600px) {
+            #main-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            #side-panel {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                min-width: auto;
+            }
+            
+            .panel-box {
+                padding: 10px;
+                min-width: 80px;
+            }
+            
+            .panel-value {
+                font-size: 18px;
+            }
+            
+            #next-canvas {
+                width: 75px;
+                height: 75px;
+            }
+            
+            .btn {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="menu-overlay">
+        <h1>TETRIS</h1>
+        <p>Scegli la dimensione del campo di gioco</p>
+        
+        <div class="size-options">
+            <div class="size-btn" onclick="selectSize(0)">
+                <div class="size-name">🔹 Piccolo</div>
+                <div class="size-info">8 x 12 blocchi - Veloce e intenso</div>
+            </div>
+            
+            <div class="size-btn" onclick="selectSize(1)">
+                <div class="size-name">🔹 Medio</div>
+                <div class="size-info">10 x 16 blocchi - Bilanciato</div>
+            </div>
+            
+            <div class="size-btn selected" onclick="selectSize(2)">
+                <div class="size-name">🔹 Grande</div>
+                <div class="size-info">12 x 20 blocchi - Classico</div>
+            </div>
+            
+            <div class="size-btn" onclick="selectSize(3)">
+                <div class="size-name">🔹 Extra Grande</div>
+                <div class="size-info">14 x 24 blocchi - Più spazio</div>
+            </div>
+        </div>
+        
+        <button id="start-btn" onclick="startGame()">INIZIA PARTITA</button>
+    </div>
+
+    <div id="main-wrapper">
+        <div id="game-area">
+            <canvas id="tetris" width="300" height="500"></canvas>
+            
+            <div id="game-overlay" onclick="showMenu()">
+                <h1 id="overlay-title">GAME OVER</h1>
+                <p id="overlay-text">Tocca per cambiare dimensione</p>
+            </div>
+        </div>
+
+        <div id="side-panel">
+            <div class="panel-box">
+                <div class="panel-title">Punteggio</div>
+                <div id="score" class="panel-value">0</div>
+            </div>
+            
+            <div class="panel-box">
+                <div class="panel-title">Livello</div>
+                <div id="level" class="panel-value">1</div>
+            </div>
+
+            <div class="panel-box">
+                <div class="panel-title">Prossimo</div>
+                <canvas id="next-canvas" width="100" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div class="control-group">
+            <div class="btn" id="btn-left" ontouchstart="playerMove(-1); event.preventDefault();" onmousedown="playerMove(-1);">←</div>
+            <div class="btn" id="btn-rotate" ontouchstart="playerRotate(1); event.preventDefault();" onmousedown="playerRotate(1);">↻</div>
+            <div class="btn" id="btn-right" ontouchstart="playerMove(1); event.preventDefault();" onmousedown="playerMove(1);">→</div>
+        </div>
+        
+        <div class="control-group">
+            <div class="btn" id="btn-drop" ontouchstart="playerHardDrop(); event.preventDefault();" onmousedown="playerHardDrop();">⤓</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('tetris');
+        const context = canvas.getContext('2d');
+        const nextCanvas = document.getElementById('next-canvas');
+        const nextContext = nextCanvas.getContext('2d');
+        
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const gameOverlay = document.getElementById('game-overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayText = document.getElementById('overlay-text');
+        const startBtn = document.getElementById('start-btn');
+
+        const sizeOptions = [
+            { width: 8, height: 12, scale: 30, canvasW: 240, canvasH: 360 },
+            { width: 10, height: 16, scale: 28, canvasW: 280, canvasH: 448 },
+            { width: 12, height: 20, scale: 25, canvasW: 300, canvasH: 500 },
+            { width: 14, height: 24, scale: 22, canvasW: 308, canvasH: 528 }
+        ];
+
+        let selectedSizeIndex = 2;
+        let currentScale = 25;
+
+        const colors = [
+            null,
+            '#FF0D72',
+            '#0DC2FF',
+            '#0DFF72',
+            '#F538FF',
+            '#FF8E0D',
+            '#FFE138',
+            '#3877FF',
+        ];
+
+        function selectSize(index) {
+            selectedSizeIndex = index;
+            document.querySelectorAll('.size-btn').forEach((btn, i) => {
+                if (i === index) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+
+        function createPiece(type) {
+            if (type === 'I') return [[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0]];
+            if (type === 'L') return [[0, 2, 0], [0, 2, 0], [0, 2, 2]];
+            if (type === 'J') return [[0, 3, 0], [0, 3, 0], [3, 3, 0]];
+            if (type === 'O') return [[4, 4], [4, 4]];
+            if (type === 'Z') return [[5, 5, 0], [0, 5, 5], [0, 0, 0]];
+            if (type === 'S') return [[0, 6, 6], [6, 6, 0], [0, 0, 0]];
+            if (type === 'T') return [[0, 7, 0], [7, 7, 7], [0, 0, 0]];
+        }
+
+        function createMatrix(w, h) {
+            const matrix = [];
+            while (h--) matrix.push(new Array(w).fill(0));
+            return matrix;
+        }
+
+        function drawMatrix(matrix, offset, ctx = context) {
+            matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        ctx.fillStyle = colors[value];
+                        ctx.fillRect(x + offset.x, y + offset.y, 1, 1);
+                        ctx.lineWidth = 0.05;
+                        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+                        ctx.strokeRect(x + offset.x, y + offset.y, 1, 1);
+                        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                        ctx.fillRect(x + offset.x, y + offset.y, 1, 0.1);
+                    }
+                });
+            });
+        }
+
+        function draw() {
+            // Disegna campo principale
+            context.save();
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.fillStyle = '#000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.restore();
+            
+            drawMatrix(arena, {x: 0, y: 0});
+            drawMatrix(player.matrix, player.pos);
+
+            // Disegna pezzo successivo
+            nextContext.save();
+            nextContext.setTransform(1, 0, 0, 1, 0, 0);
+            nextContext.fillStyle = '#000';
+            nextContext.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+            nextContext.restore();
+            
+            // Scala per il pezzo successivo (fissa a 25px)
+            nextContext.save();
+            nextContext.scale(25, 25);
+            const nextOffset = {
+                x: (4 - nextPiece.matrix[0].length) / 2,
+                y: (4 - nextPiece.matrix.length) / 2
+            };
+            drawMatrix(nextPiece.matrix, nextOffset, nextContext);
+            nextContext.restore();
+        }
+
+        function merge(arena, player) {
+            player.matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        arena[y + player.pos.y][x + player.pos.x] = value;
+                    }
+                });
+            });
+        }
+
+        function rotate(matrix, dir) {
+            for (let y = 0; y < matrix.length; ++y) {
+                for (let x = 0; x < y; ++x) {
+                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+                }
+            }
+            if (dir > 0) matrix.forEach(row => row.reverse());
+            else matrix.reverse();
+        }
+
+        function collide(arena, player) {
+            const m = player.matrix;
+            const o = player.pos;
+            for (let y = 0; y < m.length; ++y) {
+                for (let x = 0; x < m[y].length; ++x) {
+                    if (m[y][x] !== 0 &&
+                       (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function arenaSweep() {
+            let rowCount = 0;
+            outer: for (let y = arena.length -1; y > 0; --y) {
+                for (let x = 0; x < arena[y].length; ++x) {
+                    if (arena[y][x] === 0) continue outer;
+                }
+                const row = arena.splice(y, 1)[0].fill(0);
+                arena.unshift(row);
+                ++y;
+                rowCount++;
+            }
+            
+            if (rowCount > 0) {
+                const lineScores = [0, 40, 100, 300, 1200];
+                player.score += lineScores[rowCount] * player.level;
+                
+                const newLevel = Math.floor(player.score / 500) + 1;
+                if (newLevel > player.level) {
+                    player.level = newLevel;
+                    dropInterval = Math.max(100, 1000 - (player.level - 1) * 100);
+                }
+                updateScore();
+            }
+        }
+
+        function playerReset() {
+            player.matrix = nextPiece.matrix;
+            nextPiece.matrix = createPiece(piecesStr[piecesStr.length * Math.random() | 0]);
+            
+            player.pos.y = 0;
+            player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
+            
+            if (collide(arena, player)) {
+                gameOver = true;
+                gameOverlay.style.display = 'flex';
+                overlayTitle.innerText = "GAME OVER";
+                overlayText.innerText = "Punti: " + player.score + " - Tocca per cambiare dimensione";
+                startBtn.innerText = "NUOVA PARTITA";
+            }
+        }
+
+        function playerHardDrop() {
+            while (!collide(arena, player)) {
+                player.pos.y++;
+            }
+            player.pos.y--;
+            merge(arena, player);
+            playerReset();
+            arenaSweep();
+            dropCounter = 0;
+        }
+
+        function playerDrop() {
+            player.pos.y++;
+            if (collide(arena, player)) {
+                player.pos.y--;
+                merge(arena, player);
+                playerReset();
+                arenaSweep();
+            }
+            dropCounter = 0;
+        }
+
+        function playerMove(dir) {
+            player.pos.x += dir;
+            if (collide(arena, player)) player.pos.x -= dir;
+        }
+
+        function playerRotate(dir) {
+            const pos = player.pos.x;
+            let offset = 1;
+            rotate(player.matrix, dir);
+            while (collide(arena, player)) {
+                player.pos.x += offset;
+                offset = -(offset + (offset > 0 ? 1 : -1));
+                if (offset > player.matrix[0].length) {
+                    rotate(player.matrix, -dir);
+                    player.pos.x = pos;
+                    return;
+                }
+            }
+        }
+
+        function updateScore() {
+            scoreElement.innerText = player.score;
+            levelElement.innerText = player.level;
+        }
+
+        let dropCounter = 0;
+        let dropInterval = 1000;
+        let lastTime = 0;
+        let gameOver = false;
+        let isPaused = true;
+
+        let arena = null;
+        const piecesStr = 'ILJOTSZ';
+
+        const player = {
+            pos: {x: 0, y: 0},
+            matrix: null,
+            score: 0,
+            level: 1,
+        };
+
+        const nextPiece = {
+            matrix: null
+        };
+
+        function update(time = 0) {
+            if (isPaused || gameOver) return;
+
+            const deltaTime = time - lastTime;
+            lastTime = time;
+
+            dropCounter += deltaTime;
+            if (dropCounter > dropInterval) {
+                playerDrop();
+            }
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        document.addEventListener('keydown', event => {
+            if (isPaused || gameOver) return;
+            if (event.keyCode === 37) playerMove(-1);
+            else if (event.keyCode === 39) playerMove(1);
+            else if (event.keyCode === 38) playerRotate(1);
+            else if (event.keyCode === 40) playerHardDrop();
+        });
+
+        function showMenu() {
+            menuOverlay.style.display = 'flex';
+            gameOverlay.style.display = 'none';
+        }
+
+        function startGame() {
+            const size = sizeOptions[selectedSizeIndex];
+            currentScale = size.scale;
+            
+            // Imposta dimensioni canvas principale
+            canvas.width = size.canvasW;
+            canvas.height = size.canvasH;
+            
+            // Resetta e imposta scala canvas principale
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.scale(currentScale, currentScale);
+            
+            // Crea arena con dimensioni selezionate
+            arena = createMatrix(size.width, size.height);
+            
+            player.score = 0;
+            player.level = 1;
+            dropInterval = 1000;
+            updateScore();
+            gameOver = false;
+            isPaused = false;
+            
+            menuOverlay.style.display = 'none';
+            gameOverlay.style.display = 'none';
+            
+            // Inizializza pezzo successivo
+            nextPiece.matrix = createPiece(piecesStr[piecesStr.length * Math.random() | 0]);
+            playerReset();
+            update();
+        }
+
+        selectSize(2);
+    </script>
+</body>
+</html>
